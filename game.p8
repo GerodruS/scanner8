@@ -151,10 +151,12 @@ function get_resource(p,s)
  local r2=s.radius^2
  local d2=vdist2(p,s)
  if d2<=r2 then
-  local t=1-d2/r2
+  local t=(1-sqrt(d2/r2))^2
+--  color(10)
 --  print(r2)
 --  print(d2)
 --  print(t)
+--  color(7)
   local a=t*s.amount
   return {
    stype=s.stype,
