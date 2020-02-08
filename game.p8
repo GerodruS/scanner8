@@ -13,13 +13,13 @@ end
 
 function _update60()
  local d={0,0}
- local input=false
- if (btn(⬆️)) d[2]-=1 input=true
- if (btn(⬇️)) d[2]+=1 input=true
- if (btn(⬅️)) d[1]-=1 input=true
- if (btn(➡️)) d[1]+=1 input=true
+ local move=false
+ if (btn(⬆️)) d[2]-=1 move=true
+ if (btn(⬇️)) d[2]+=1 move=true
+ if (btn(⬅️)) d[1]-=1 move=true
+ if (btn(➡️)) d[1]+=1 move=true
  
- if input then
+ if move then
 	 vnorm(d)
 	 vscale(d,0.5)
 	 vadd(scanner_pos,d)
@@ -30,6 +30,11 @@ function _update60()
 	  vscale(scanner_pos,planet_radius)
    vadd(scanner_pos,planet_center)
   end
+ end
+ 
+ if btnp(❎) then
+  local sp=vcpy(scanner_pos)
+  collect_resources(sp)
  end
 end
 
@@ -46,11 +51,16 @@ function _draw()
   pset(sources[i][1],sources[i][2],c)
  end
  
+ color(7)
  local resources=get_resources(sp)
  print(resources[1])
  print(resources[2])
  print(resources[3])
  print(resources[4])
+ 
+ for i=1,count(sources) do
+  print(sources[i].radius)
+ end
 
  pset(scanner_pos[1],scanner_pos[2],8)
 end
@@ -146,9 +156,37 @@ function get_resource(p,s)
 --  print(d2)
 --  print(t)
   local a=t*s.amount
-  return {stype=s.stype,amount=a}
+  return {
+   stype=s.stype,
+   amount=a,
+   distance=sqrt(d2),
+   }
  end
  return nil
+end
+
+function collect_resources(p)
+ local r={0,0,0,0}
+ for i=1,count(sources) do
+  local t=collect_resource(p,sources[i])
+  if t then
+   r[t.stype]+=t.amount
+  end
+ end
+ for i=count(sources),1,-1 do
+  local elem=sources[i]
+  if (elem.amount<=0) del(sources,elem)
+ end
+ return r
+end
+
+function collect_resource(p,s)
+ local r=get_resource(p,s)
+ if r then
+  s.radius=r.distance
+  s.amount-=r.amount
+ end
+ return r
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
