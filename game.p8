@@ -21,7 +21,7 @@ function _update60()
  
  if input then
 	 vnorm(d)
-	 vscale(d,1)
+	 vscale(d,0.5)
 	 vadd(scanner_pos,d)
 	 local r=vdist(scanner_pos,planet_center)
   if planet_radius<r then
@@ -38,12 +38,14 @@ function _draw()
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
  
- local best_i=get_closest_source(scanner_pos)
+ local sp=vcpy(scanner_pos)
+ vflr(sp)
+ local best_i=get_closest_source(sp)
  for i=1,count(sources) do
   local c=best_i[1]==i and 9 or 3
   pset(sources[i][1],sources[i][2],c)
  end
- 
+
  pset(scanner_pos[1],scanner_pos[2],8)
 end
 -->8
@@ -77,10 +79,20 @@ function vdist2(a,b)
  return (a[1]-b[1])^2+
         (a[2]-b[2])^2
 end
+
+function vflr(v)
+ v[1]=flr(v[1])
+ v[2]=flr(v[2])
+end
+
+function vcpy(v)
+ return {v[1],v[2]}
+end
 -->8
 function generate_sources()
  local r=planet_radius
  local d=r*2
+ srand(0)
 	for i=1,5 do
 	 local p={flr(rnd(d))-r,flr(rnd(d))-r}
 	 local dist=vdist(p,{0,0})
@@ -89,12 +101,13 @@ function generate_sources()
 	  vscale(p,planet_radius)
 	 end
 	 vadd(p,planet_center)
+	 vflr(p)
 	 add(sources,p)
 	end
 end
 
 function get_closest_source(p)
- local best_d=planet_radius^2
+ local best_d=(planet_radius*2)^2
  local best_i=nil
  for i=1,count(sources) do
   local d=vdist2(p,sources[i])
