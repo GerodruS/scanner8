@@ -3,9 +3,9 @@ version 18
 __lua__
 --main
 function _init()
- planet_center={63.5,63.5}
- planet_radius=10
- scanner_pos={63,63}
+ planet_center={63.5-30,63.5}
+ planet_radius=25
+ scanner_pos=vcpy(planet_center)
  sources={}
  
  generate_sources()
@@ -63,6 +63,31 @@ function _draw()
  end
 
  pset(scanner_pos[1],scanner_pos[2],8)
+
+ draw_graph(resources)
+end
+
+function draw_graph(resources)
+ local pos={64,64}
+ local len=64
+ local resource_len=len/4
+ local noise=4
+
+-- local ps={pos}
+ color(7)
+ local p=vcpy(pos)
+ for i=0,len-1,2 do
+  local x=pos[1]+i
+  local y=pos[2]+noise/2-rnd(noise)
+  local ri=flr(i/resource_len)+1
+--  print(ri)
+  y-=resources[ri]*10
+  line(p[1],p[2],x,y)
+  p[1]=x
+  p[2]=y
+ end
+ 
+ 
 end
 -->8
 --vector math
@@ -109,6 +134,8 @@ end
 function generate_sources()
  local r=planet_radius
  local d=r*2
+ local min_r=planet_radius/6
+ local max_r=planet_radius/4
  srand(0)
 	for i=1,5 do
 	 local p={flr(rnd(d))-r,flr(rnd(d))-r}
@@ -119,7 +146,7 @@ function generate_sources()
 	 end
 	 vadd(p,planet_center)
 	 vflr(p)
-	 p.radius=2+flr(rnd(2))
+	 p.radius=min_r+flr(rnd(max_r-min_r))
 	 p.stype=1+flr(rnd(4))
 	 p.amount=4+flr(rnd(4))
 	 add(sources,p)
