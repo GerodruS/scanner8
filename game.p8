@@ -7,11 +7,16 @@ function _init()
  planet_radius=25
  scanner_pos=vcpy(planet_center)
  sources={}
- signals={{}}
- for i=1,16 do
-  add(signals[1],0)
+ signals={}
+ for i=1,8 do
+  local s={}
+	 for i=1,16 do
+	  add(s,0)
+	 end
+	 add(signals,s)
  end
  next_gen_time=0
+ next_signal_time=0
  
  generate_sources()
 end
@@ -78,10 +83,22 @@ function draw_graph(resources)
  local resource_len=len/4
  local noise=4
  local signal=signals[1]
+ local signals_count=count(signals)
  local n=count(signal)
+ local next_signal_delay=0.3
+ local signal_y_offset=4
 
- local regen=next_gen_time<=time()
- if regen then
+ local t=time()
+ if next_gen_time<=t then
+  if next_signal_time<=t then
+   signal=signals[signals_count]
+   for i=signals_count,2,-1 do
+    signals[i]=signals[i-1]
+   end
+   signals[1]=signal
+   next_signal_time=t+next_signal_delay
+  end
+ 
   signal[1]=0
   for i=2,n-1 do
    local ri=flr(i/(n/4))+1
@@ -90,12 +107,33 @@ function draw_graph(resources)
    signal[i]=s
   end
   signal[n]=0
-  next_gen_time=time()+0.1
+  next_gen_time=t+0.1
  end
 
- color(7)
+-- color(7)
+-- local p=vcpy(pos)
+-- for i=1,n do
+--  local x=pos[1]+(i-1)*4
+--  local y=pos[2]-signal[i]
+--  line(p[1],p[2],x,y)
+--  p[1]=x
+--  p[2]=y
+-- end
+ 
+-- local clrs={7,2,2,2,2,2,2,2,15,14,8}
+ local y=pos[2]
+ for i=signals_count,2,-1 do
+  pos[2]=y-(i-2)*signal_y_offset-(1-(next_signal_time-t)/next_signal_delay)*signal_y_offset
+  draw_signal(signals[i],pos,2)
+ end
+ pos[2]=y
+ draw_signal(signals[1],pos,7)
+end
+
+function draw_signal(signal,pos,clr)
+ color(clr)
  local p=vcpy(pos)
- for i=1,n do
+ for i=1,count(signal) do
   local x=pos[1]+(i-1)*4
   local y=pos[2]-signal[i]
   line(p[1],p[2],x,y)
