@@ -45,6 +45,12 @@ function _draw()
   local c=best_i[1]==i and 9 or 3
   pset(sources[i][1],sources[i][2],c)
  end
+ 
+ local resources=get_resources(sp)
+ print(resources[1])
+ print(resources[2])
+ print(resources[3])
+ print(resources[4])
 
  pset(scanner_pos[1],scanner_pos[2],8)
 end
@@ -89,6 +95,7 @@ function vcpy(v)
  return {v[1],v[2]}
 end
 -->8
+--sources
 function generate_sources()
  local r=planet_radius
  local d=r*2
@@ -102,6 +109,9 @@ function generate_sources()
 	 end
 	 vadd(p,planet_center)
 	 vflr(p)
+	 p.radius=2+flr(rnd(2))
+	 p.stype=1+flr(rnd(4))
+	 p.amount=4+flr(rnd(4))
 	 add(sources,p)
 	end
 end
@@ -114,6 +124,31 @@ function get_closest_source(p)
   if (d<best_d) best_d=d best_i=i
  end
  return {best_i,best_d}
+end
+
+function get_resources(p)
+ local r={0,0,0,0}
+ for i=1,count(sources) do
+  local t=get_resource(p,sources[i])
+  if t then
+   r[t.stype]+=t.amount
+  end
+ end
+ return r
+end
+
+function get_resource(p,s)
+ local r2=s.radius^2
+ local d2=vdist2(p,s)
+ if d2<=r2 then
+  local t=1-d2/r2
+--  print(r2)
+--  print(d2)
+--  print(t)
+  local a=t*s.amount
+  return {stype=s.stype,amount=a}
+ end
+ return nil
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
