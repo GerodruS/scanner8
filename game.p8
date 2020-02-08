@@ -7,6 +7,11 @@ function _init()
  planet_radius=25
  scanner_pos=vcpy(planet_center)
  sources={}
+ signals={{}}
+ for i=1,16 do
+  add(signals[1],0)
+ end
+ next_gen_time=0
  
  generate_sources()
 end
@@ -72,22 +77,31 @@ function draw_graph(resources)
  local len=64
  local resource_len=len/4
  local noise=4
+ local signal=signals[1]
+ local n=count(signal)
 
--- local ps={pos}
+ local regen=next_gen_time<=time()
+ if regen then
+  signal[1]=0
+  for i=2,n-1 do
+   local ri=flr(i/(n/4))+1
+   local s=resources[ri]*10
+   s+=noise/2-rnd(noise)
+   signal[i]=s
+  end
+  signal[n]=0
+  next_gen_time=time()+0.1
+ end
+
  color(7)
  local p=vcpy(pos)
- for i=0,len-1,2 do
-  local x=pos[1]+i
-  local y=pos[2]+noise/2-rnd(noise)
-  local ri=flr(i/resource_len)+1
---  print(ri)
-  y-=resources[ri]*10
+ for i=1,n do
+  local x=pos[1]+(i-1)*4
+  local y=pos[2]-signal[i]
   line(p[1],p[2],x,y)
   p[1]=x
   p[2]=y
  end
- 
- 
 end
 -->8
 --vector math
