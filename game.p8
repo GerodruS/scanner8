@@ -6,6 +6,9 @@ function _init()
  planet_center={63.5,63.5}
  planet_radius=10
  scanner_pos={63,63}
+ sources={}
+ 
+ generate_sources()
 end
 
 function _update60()
@@ -34,6 +37,11 @@ function _draw()
  cls()
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
+ 
+ for i=1,count(sources) do
+  pset(sources[i][1],sources[i][2],3)
+ end
+ 
  pset(scanner_pos[1],scanner_pos[2],8)
 end
 -->8
@@ -63,6 +71,21 @@ function vdist(a,b)
  return sqrt(
   (a[1]-b[1])^2+
   (a[2]-b[2])^2)
+end
+-->8
+function generate_sources()
+ local r=planet_radius
+ local d=r*2
+	for i=1,5 do
+	 local p={flr(rnd(d))-r,flr(rnd(d))-r}
+	 local dist=vdist(p,{0,0})
+  if r<dist then
+   vnorm(p)
+	  vscale(p,planet_radius)
+	 end
+	 vadd(p,planet_center)
+	 add(sources,p)
+	end
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
