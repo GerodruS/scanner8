@@ -38,8 +38,10 @@ function _draw()
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
  
+ local best_i=get_closest_source(scanner_pos)
  for i=1,count(sources) do
-  pset(sources[i][1],sources[i][2],3)
+  local c=best_i[1]==i and 9 or 3
+  pset(sources[i][1],sources[i][2],c)
  end
  
  pset(scanner_pos[1],scanner_pos[2],8)
@@ -68,9 +70,12 @@ function vscale(v,s)
 end
 
 function vdist(a,b)
- return sqrt(
-  (a[1]-b[1])^2+
-  (a[2]-b[2])^2)
+ return sqrt(vdist2(a,b))
+end
+
+function vdist2(a,b)
+ return (a[1]-b[1])^2+
+        (a[2]-b[2])^2
 end
 -->8
 function generate_sources()
@@ -86,6 +91,16 @@ function generate_sources()
 	 vadd(p,planet_center)
 	 add(sources,p)
 	end
+end
+
+function get_closest_source(p)
+ local best_d=planet_radius^2
+ local best_i=nil
+ for i=1,count(sources) do
+  local d=vdist2(p,sources[i])
+  if (d<best_d) best_d=d best_i=i
+ end
+ return {best_i,best_d}
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
