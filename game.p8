@@ -127,11 +127,21 @@ function draw_graph(resources)
  for i=signals_count,2,-1 do
   pos[2]=y-(i-2)*signal_y_offset-(1-(next_signal_time-t)/next_signal_delay)*signal_y_offset
   draw_signal(signals[i],pos,2)
+  
+  if i==signals_count-1 then
+   for x=pos[1],pos[1]+(count(signals[i])-1)*4,4 do
+    line(x,4,x,50,0)
+   end
+  elseif i==signals_count-3 then
+   for x=pos[1]+2,pos[1]+(count(signals[i])-1)*4,4 do
+    line(x,4,x,50,0)
+   end
+  end
  end
  pos[2]=y
  draw_signal(signals[1],pos,7)
  
--- print(stat(1))
+ color(11) print(stat(1))
 end
 
 function draw_signal(signal,pos,clr)
