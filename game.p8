@@ -51,6 +51,10 @@ end
 
 function _draw()
  cls()
+ 
+ draw_planet(planet_center,planet_radius)
+ if (true) color(11) print(stat(1)) return
+ 
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
  
@@ -77,6 +81,8 @@ function _draw()
  pset(scanner_pos[1],scanner_pos[2],8)
 
  draw_graph(resources)
+ 
+ color(11) print(stat(1))
 end
 
 function draw_graph(resources)
@@ -140,8 +146,6 @@ function draw_graph(resources)
  end
  pos[2]=y
  draw_signal(signals[1],pos,7)
- 
- color(11) print(stat(1))
 end
 
 function draw_signal(signal,pos,clr)
@@ -283,6 +287,58 @@ function collect_resource(p,s)
   s.amount-=r.amount
  end
  return r
+end
+-->8
+function draw_planet(center,radius)
+ local left=center[1]-radius
+ local right=center[1]+radius
+ local top=center[2]-radius
+ local bottom=center[2]+radius
+ 
+-- color(7)
+-- print(left)
+-- print(right)
+-- print(top)
+-- print(bottom)
+ 
+ for x=left,right do
+  for y=top,bottom do
+   local px=2*(x-left)/(right-left)-1
+   local py=2*(y-top)/(bottom-top)-1
+   local d2=px*px+py*py
+   if d2<=1 then
+--    px/=sqrt(1-py*py)
+    px=asin(px/sqrt(1-py*py))*2/3.141592653589
+				py=asin(py)*2/3.141592653589
+    local u=time()*1+(px+1)*(64/2)
+    local v=(py+1)*(64/2)
+    local clr=get_planet_pixel(u,v)
+    pset(x,y,clr)
+   end
+  end
+ end
+end
+
+function get_planet_pixel(x,y)
+ if (flr(x/7)+flr(y/7))%2==0 then
+  return 6
+ else
+  return 14
+ end
+end
+
+function asin(x)
+	local negate = (x < 0 and 1.0 or 0.0)
+	x = abs(x)
+	local ret = -0.0187293
+	ret *= x
+	ret += 0.0742610
+	ret *= x
+	ret -= 0.2121144
+	ret *= x
+	ret += 1.5707288
+	ret = 3.14159265358979*0.5 - sqrt(1.0 - x)*ret
+	return ret - 2 * negate * ret
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
