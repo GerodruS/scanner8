@@ -19,6 +19,7 @@ function _init()
  next_signal_time=0
  
  generate_sources()
+ generate_planet_view(planet_center,planet_radius)
 end
 
 function _update60()
@@ -53,7 +54,7 @@ function _draw()
  cls()
  
  draw_planet(planet_center,planet_radius)
- if (true) color(11) print(stat(1)) return
+ if (true) color(11) print(stat(0)..' '..stat(1)) return
  
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
@@ -82,7 +83,7 @@ function _draw()
 
  draw_graph(resources)
  
- color(11) print(stat(1))
+ color(11) print(stat(0)..' '..stat(1))
 end
 
 function draw_graph(resources)
@@ -289,33 +290,42 @@ function collect_resource(p,s)
  return r
 end
 -->8
-function draw_planet(center,radius)
+function generate_planet_view(center,radius)
+ planet_pixels={}
+ 
  local left=center[1]-radius
  local right=center[1]+radius
  local top=center[2]-radius
  local bottom=center[2]+radius
- 
--- color(7)
--- print(left)
--- print(right)
--- print(top)
--- print(bottom)
+ local diameter=radius*2
  
  for x=left,right do
   for y=top,bottom do
-   local px=2*(x-left)/(right-left)-1
-   local py=2*(y-top)/(bottom-top)-1
+   local px=2*(x-left)/diameter-1
+   local py=2*(y-top)/diameter-1
    local d2=px*px+py*py
    if d2<=1 then
---    px/=sqrt(1-py*py)
     px=asin(px/sqrt(1-py*py))*2/3.141592653589
 				py=asin(py)*2/3.141592653589
-    local u=time()*1+(px+1)*(64/2)
+    local u=time()*0+(px+1)*(64/2)
     local v=(py+1)*(64/2)
-    local clr=get_planet_pixel(u,v)
-    pset(x,y,clr)
+    add(planet_pixels,x)
+    add(planet_pixels,y)
+    add(planet_pixels,u)
+    add(planet_pixels,v)
    end
   end
+ end
+end
+
+function draw_planet()
+ for i=1,count(planet_pixels),4 do
+  local x=planet_pixels[i]
+  local y=planet_pixels[i+1]
+  local u=time()*1+planet_pixels[i+2]
+  local v=planet_pixels[i+3]
+  local clr=get_planet_pixel(u,v)
+  pset(x,y,clr)
  end
 end
 
@@ -328,17 +338,11 @@ function get_planet_pixel(x,y)
 end
 
 function asin(x)
-	local negate = (x < 0 and 1.0 or 0.0)
-	x = abs(x)
-	local ret = -0.0187293
-	ret *= x
-	ret += 0.0742610
-	ret *= x
-	ret -= 0.2121144
-	ret *= x
-	ret += 1.5707288
-	ret = 3.14159265358979*0.5 - sqrt(1.0 - x)*ret
-	return ret - 2 * negate * ret
+	local negate=(x<0 and 1.0 or 0.0)
+	x=abs(x)
+	local r=((-0.0187293*x+0.0742610)*x-0.2121144)*x+1.5707288
+ r=3.14159265358979*0.5-sqrt(1.0-x)*r
+ return r-2*negate*r
 end
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
