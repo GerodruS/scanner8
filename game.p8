@@ -44,6 +44,7 @@ function _update60()
  
  if btnp(❎) then
   local sp=vcpy(scanner_pos)
+  vflr(sp)
   collect_resources(sp)
  end
 end
@@ -55,6 +56,7 @@ function _draw()
  
  local sp=vcpy(scanner_pos)
  vflr(sp)
+ 
  local best_i=get_closest_source(sp)
  for i=1,count(sources) do
   local c=best_i[1]==i and 9 or 3
@@ -102,7 +104,7 @@ function draw_graph(resources)
   signal[1]=0
   for i=2,n-1 do
    local ri=flr(i/(n/4))+1
-   local s=resources[ri]*10
+   local s=resources[ri]*5
    s+=noise/2-rnd(noise)
    signal[i]=s
   end
@@ -128,6 +130,8 @@ function draw_graph(resources)
  end
  pos[2]=y
  draw_signal(signals[1],pos,7)
+ 
+-- print(stat(1))
 end
 
 function draw_signal(signal,pos,clr)
@@ -190,7 +194,8 @@ function generate_sources()
  local max_r=planet_radius/4
  srand(0)
 	for i=1,5 do
-	 local p={flr(rnd(d))-r,flr(rnd(d))-r}
+	 local p={rnd(d)-r,rnd(d)-r}
+	 vflr(p)
 	 local dist=vdist(p,{0,0})
   if r<dist then
    vnorm(p)
