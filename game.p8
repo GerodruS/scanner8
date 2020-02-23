@@ -42,16 +42,19 @@ function _update60()
 end
 
 function _draw()
- cls()
+ local sp=vcpy(scanner_pos)
+ vflr(sp)
  
+-- cls()
+ 
+ surface.draw(sp)
+-- if (true) return
  planet.draw(surface.get_pixel)
 -- if (true) color(11) print(stat(0)..' '..stat(1)) return
  
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
  
- local sp=vcpy(scanner_pos)
- vflr(sp)
  
  sources.draw(sp)
  sources.debug_print(sp)
@@ -397,8 +400,15 @@ function init_planet_surface()
  memcpy(0x1000,0x6000,1024*4)
 
  return {
+  draw=function(p)
+   cls()
+   memcpy(0x6000+1024*2,0x1000,1024*4)
+   rectfill(p[1]-2,p[2]-2,p[1]+2,p[2]+2,8)
+   memcpy(0x2000,0x6000+1024*2,1024*4)
+   cls()
+  end,
   get_pixel=function(x,y)
-   local c=peek(0x1000+(x+y*128)*0.5)
+   local c=peek(0x2000+(x+y*128)*0.5)
    if (x%2==0) c=shr(c,4)
    c=band(c,15)
    return c
