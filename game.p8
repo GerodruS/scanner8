@@ -6,10 +6,9 @@ function _init()
  planet_center={63.5-30,63.5}
  planet_radius=25
  scanner_pos=vcpy(planet_center)
- sources={}
  signal=init_signal()
  
- generate_sources()
+ sources=generate_sources()
  planet=generate_planet_view(planet_center,planet_radius)
 end
 
@@ -37,7 +36,7 @@ function _update60()
  if btnp(❎) then
   local sp=vcpy(scanner_pos)
   vflr(sp)
-  collect_resources(sp)
+  sources.collect(sp)
  end
 end
 
@@ -45,7 +44,7 @@ function _draw()
  cls()
  
  planet.draw()
- if (true) color(11) print(stat(0)..' '..stat(1)) return
+-- if (true) color(11) print(stat(0)..' '..stat(1)) return
  
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
@@ -53,25 +52,12 @@ function _draw()
  local sp=vcpy(scanner_pos)
  vflr(sp)
  
- local best_i=get_closest_source(sp)
- for i=1,count(sources) do
-  local c=best_i[1]==i and 9 or 3
-  pset(sources[i][1],sources[i][2],c)
- end
+ sources.draw(sp)
+-- sources.de g_print(sp)
  
- color(7)
- local resources=get_resources(sp)
- print(resources[1])
- print(resources[2])
- print(resources[3])
- print(resources[4])
- 
- for i=1,count(sources) do
-  print(sources[i].radius)
- end
-
  pset(scanner_pos[1],scanner_pos[2],8)
 
+ local resources=sources.get_resources(sp)
  signal.draw(resources)
  
  color(11) print(stat(0)..' '..stat(1))
@@ -119,6 +105,7 @@ end
 -->8
 --sources
 function generate_sources()
+ local sources={}
  local r=planet_radius
  local d=r*2
  local min_r=planet_radius/6
@@ -139,73 +126,98 @@ function generate_sources()
 	 p.amount=4+flr(rnd(4))
 	 add(sources,p)
 	end
-end
 
-function get_closest_source(p)
- local best_d=(planet_radius*2)^2
- local best_i=nil
- for i=1,count(sources) do
-  local d=vdist2(p,sources[i])
-  if (d<best_d) best_d=d best_i=i
- end
- return {best_i,best_d}
-end
-
-function get_resources(p)
- local r={0,0,0,0}
- for i=1,count(sources) do
-  local t=get_resource(p,sources[i])
-  if t then
-   r[t.stype]+=t.amount
-  end
- end
- return r
-end
-
-function get_resource(p,s)
- local r2=s.radius^2
- local d2=vdist2(p,s)
- if d2<=r2 then
-  local t=(1-sqrt(d2/r2))^2
---  color(10)
---  print(r2)
---  print(d2)
---  print(t)
---  color(7)
-  local a=t*s.amount
-  return {
-   stype=s.stype,
-   amount=a,
-   distance=sqrt(d2),
-   }
- end
- return nil
-end
-
-function collect_resources(p)
- local r={0,0,0,0}
- for i=1,count(sources) do
-  local t=collect_resource(p,sources[i])
-  if t then
-   r[t.stype]+=t.amount
-  end
- end
- for i=count(sources),1,-1 do
-  local elem=sources[i]
-  if (elem.amount<=0) del(sources,elem)
- end
- return r
-end
-
-function collect_resource(p,s)
- local r=get_resource(p,s)
- if r then
-  s.radius=r.distance
-  s.amount-=r.amount
- end
- return r
+	local function get_closest_source(p)
+	 local best_d=(planet_radius*2)^2
+	 local best_i=nil
+	 for i=1,count(sources) do
+	  local d=vdist2(p,sources[i])
+	  if (d<best_d) best_d=d best_i=i
+	 end
+	 return {best_i,best_d}
+	end
+	
+	local function get_resource(p,s)
+	 local r2=s.radius^2
+	 local d2=vdist2(p,s)
+	 if d2<=r2 then
+	  local t=(1-sqrt(d2/r2))^2
+	--  color(10)
+	--  print(r2)
+	--  print(d2)
+	--  print(t)
+	--  color(7)
+	  local a=t*s.amount
+	  return {
+	   stype=s.stype,
+	   amount=a,
+	   distance=sqrt(d2),
+	   }
+	 end
+	 return nil
+	end
+	
+	local function get_resources(p)
+	 local r={0,0,0,0}
+	 for i=1,count(sources) do
+	  local t=get_resource(p,sources[i])
+	  if t then
+	   r[t.stype]+=t.amount
+	  end
+	 end
+	 return r
+	end
+	
+	local function collect_resource(p,s)
+	 local r=get_resource(p,s)
+	 if r then
+	  s.radius=r.distance
+	  s.amount-=r.amount
+	 end
+	 return r
+	end
+	
+	local function collect_resources(p)
+	 local r={0,0,0,0}
+	 for i=1,count(sources) do
+	  local t=collect_resource(p,sources[i])
+	  if t then
+	   r[t.stype]+=t.amount
+	  end
+	 end
+	 for i=count(sources),1,-1 do
+	  local elem=sources[i]
+	  if (elem.amount<=0) del(sources,elem)
+	 end
+	 return r
+	end
+	
+	return {
+	 get_resources=get_resources,
+	 collect=collect_resources,
+	 draw=function(position)
+	  local best_i=get_closest_source(position)
+		 for i=1,count(sources) do
+		  local c=best_i[1]==i and 9 or 3
+		  pset(sources[i][1],sources[i][2],c)
+		 end
+	 end,
+	 debug_print=function(position)
+		 color(7)
+		 local resources=get_resources(position)
+		 print(resources[1])
+		 print(resources[2])
+		 print(resources[3])
+		 print(resources[4])
+		 
+		 for i=1,count(sources) do
+		  print(sources[i].radius)
+		 end
+	 end,
+	 }
 end
 -->8
+--planet view
 function generate_planet_view(center,radius)
 
 	local function asin(x)
@@ -257,22 +269,22 @@ end
 	end
 
 	local function draw_planet()
- local offset=time()*100
- 
- local i=1
- local n=count(planet_pixels)
- while i<n do
-  local x=planet_pixels[i] i+=1
-  local y=planet_pixels[i] i+=1
-  local m=planet_pixels[i] i+=1
-  for yy=y,y+m-1 do
-	  local u=planet_pixels[i]+offset i+=1
-	  local v=planet_pixels[i] i+=1
-   local clr=get_planet_pixel(u,v)
-	  pset(x,yy,clr)
-  end
- end
-end
+	 local offset=time()*10
+	 
+	 local i=1
+	 local n=count(planet_pixels)
+	 while i<n do
+	  local x=planet_pixels[i] i+=1
+	  local y=planet_pixels[i] i+=1
+	  local m=planet_pixels[i] i+=1
+	  for yy=y,y+m-1 do
+		  local u=planet_pixels[i]+offset i+=1
+		  local v=planet_pixels[i] i+=1
+	   local clr=get_planet_pixel(u,v)
+		  pset(x,yy,clr)
+	  end
+	 end
+	end
 
 	return {draw=draw_planet}
 end
