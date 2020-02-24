@@ -56,26 +56,26 @@ end
 function _draw()
  local sp=vcpy(scanner_pos)
  vflr(sp)
- 
+
 -- cls()
- 
+
  surface.draw(sp)
 -- if (true) return
  planet.draw(planet_offset,surface.get_pixel)
 -- if (true) color(11) print(stat(0)..' '..stat(1)) return
- 
+
 -- pset(planet_center[1],planet_center[2],7)
  circ(planet_center[1],planet_center[2],planet_radius+1,7)
- 
- 
+
+
  sources.draw(sp)
  sources.debug_print(sp)
- 
+
  pset(scanner_pos[1],scanner_pos[2],8)
 
  local resources=sources.get_resources(sp)
  signal.draw(resources)
- 
+
  color(11) print(stat(0)..' '..stat(1))
 end
 -->8
@@ -147,7 +147,7 @@ function generate_sources(x,y,w,h)
   end
   return {best_i,best_d}
  end
- 
+
  local function get_resource(p,s)
   local r2=s.radius^2
   local d2=vdist2(p,s)
@@ -167,7 +167,7 @@ function generate_sources(x,y,w,h)
   end
   return nil
  end
- 
+
  local function get_resources(p)
   local r={0,0,0,0}
   for i=1,#sources do
@@ -178,7 +178,7 @@ function generate_sources(x,y,w,h)
   end
   return r
  end
- 
+
  local function collect_resource(p,s)
   local r=get_resource(p,s)
   if r then
@@ -187,7 +187,7 @@ function generate_sources(x,y,w,h)
   end
   return r
  end
- 
+
  local function collect_resources(p)
   local r={0,0,0,0}
   for i=1,#sources do
@@ -202,7 +202,7 @@ function generate_sources(x,y,w,h)
   end
   return r
  end
- 
+
  return {
   get_resources=get_resources,
   collect=collect_resources,
@@ -220,7 +220,7 @@ function generate_sources(x,y,w,h)
    print(resources[2])
    print(resources[3])
    print(resources[4])
-   
+
    for i=1,#sources do
     print(sources[i].radius)
    end
@@ -238,7 +238,7 @@ function generate_planet_view(center,radius)
   r=3.14159265358979*0.5-sqrt(1.0-x)*r
   return r-2*negate*r
  end
- 
+
  local planet_pixels={}
  local left=center[1]-radius
  local right=center[1]+radius
@@ -246,7 +246,7 @@ function generate_planet_view(center,radius)
  local bottom=center[2]+radius
  local diameter=radius*2
  local height=64
- 
+
  for x=left,right do
   local y_min=bottom
   local p={}
@@ -271,7 +271,7 @@ function generate_planet_view(center,radius)
    add(planet_pixels,flr(p[j][2]))
   end
  end
--- 
+--
 -- local function get_planet_pixel(x,y)
 --  if (flr(x/7)+flr(y/7))%2==0 then
 --   return 6
@@ -314,7 +314,7 @@ function init_signal()
  end
  local next_gen_time=0
  local next_signal_time=0
- 
+
  local function draw_signal(signal,pos,clr)
   color(clr)
   local p=vcpy(pos)
@@ -326,7 +326,7 @@ function init_signal()
    p[2]=y
   end
  end
- 
+
  local function draw_graph(resources)
   local pos={64,64}
   local len=64
@@ -337,7 +337,7 @@ function init_signal()
   local n=#signal
   local next_signal_delay=0.3
   local signal_y_offset=4
- 
+
   local t=time()
   if next_gen_time<=t then
    if next_signal_time<=t then
@@ -348,7 +348,7 @@ function init_signal()
     signals[1]=signal
     next_signal_time=t+next_signal_delay
    end
-  
+
    signal[1]=0
    for i=2,n-1 do
     local ri=flr(i/(n/4))+1
@@ -359,7 +359,7 @@ function init_signal()
    signal[n]=0
    next_gen_time=t+0.1
   end
- 
+
  -- color(7)
  -- local p=vcpy(pos)
  -- for i=1,n do
@@ -369,13 +369,13 @@ function init_signal()
  --  p[1]=x
  --  p[2]=y
  -- end
-  
+
  -- local clrs={7,2,2,2,2,2,2,2,15,14,8}
   local y=pos[2]
   for i=signals_count,2,-1 do
    pos[2]=y-(i-2)*signal_y_offset-(1-(next_signal_time-t)/next_signal_delay)*signal_y_offset
    draw_signal(signals[i],pos,2)
-   
+
    if i==signals_count-1 then
     for x=pos[1],pos[1]+(#signals[i]-1)*4,4 do
      line(x,4,x,50,0)
