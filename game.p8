@@ -5,12 +5,14 @@ __lua__
 function _init()
  planet_center={63.5-30,63.5}
  planet_radius=25
- scanner_pos=vcpy(planet_center)
+ scanner_pos_offset=vcpy(planet_center)
+ scanner_pos=vcpy(scanner_pos_offset)
  signal=init_signal()
- 
- sources=generate_sources()
+ planet_offset=0
+
  planet=generate_planet_view(planet_center,planet_radius)
  surface=init_planet_surface()
+ sources=generate_sources(surface.pos[1],surface.pos[2],surface.size[1],surface.size[2])
 end
 
 function _update60()
@@ -31,22 +33,24 @@ function _update60()
 
  if move then
   vnorm(d)
-  vscale(d,0.1)
+  vscale(d,0.3)
   vadd(scanner_pos,d)
-  local r=vdist(scanner_pos,planet_center)
-  if planet_radius<r then
-   vsub(scanner_pos,planet_center)
-   vnorm(scanner_pos)
-   vscale(scanner_pos,planet_radius)
-   vadd(scanner_pos,planet_center)
-  end
+  if (surface.size[1]<=scanner_pos[1]) planet_offset-=surface.size[1]
+  if (scanner_pos[1]<0) planet_offset+=surface.size[1]
+  scanner_pos[1]=scanner_pos[1]%surface.size[1]
+  scanner_pos[2]=clamp(scanner_pos[2],32+8,63+32-8)
  end
- 
+
  if btnp(❎) then
   local sp=vcpy(scanner_pos)
   vflr(sp)
   sources.collect(sp)
  end
+
+ local border=10
+ local d=scanner_pos[1]-scanner_pos_offset[1]-planet_offset
+ if (d<-border) planet_offset-=1
+ if (border<d) planet_offset+=1
 end
 
 function _draw()
@@ -57,7 +61,7 @@ function _draw()
  
  surface.draw(sp)
 -- if (true) return
- planet.draw(surface.get_pixel)
+ planet.draw(planet_offset,surface.get_pixel)
 -- if (true) color(11) print(stat(0)..' '..stat(1)) return
  
 -- pset(planet_center[1],planet_center[2],7)
@@ -75,7 +79,11 @@ function _draw()
  color(11) print(stat(0)..' '..stat(1))
 end
 -->8
---vector math
+--math
+function clamp(v,v_min,v_max)
+ return min(max(v,v_min),v_max)
+end
+
 function vnorm(v)
  local l=sqrt(v[1]^2+v[2]^2)
  v[1]/=l
@@ -116,22 +124,13 @@ function vcpy(v)
 end
 -->8
 --sources
-function generate_sources()
+function generate_sources(x,y,w,h)
  local sources={}
- local r=planet_radius
- local d=r*2
  local min_r=planet_radius/6
  local max_r=planet_radius/4
  srand(0)
  for i=1,5 do
-  local p={rnd(d)-r,rnd(d)-r}
-  vflr(p)
-  local dist=vdist(p,{0,0})
-  if r<dist then
-   vnorm(p)
-   vscale(p,planet_radius)
-  end
-  vadd(p,planet_center)
+  local p={rnd(w)+x,rnd(h)+y}
   vflr(p)
   p.radius=min_r+flr(rnd(max_r-min_r))
   p.stype=1+flr(rnd(4))
@@ -281,9 +280,7 @@ function generate_planet_view(center,radius)
 --  end
 -- end
 
- local function draw_planet(get_pixel)
-  local offset=time()*1
-  
+ local function draw_planet(offset,get_pixel)
   local i=1
   local n=#planet_pixels
   while i<n do
@@ -291,9 +288,10 @@ function generate_planet_view(center,radius)
    local y=planet_pixels[i] i+=1
    local m=planet_pixels[i] i+=1
    for yy=y,y+m-1 do
-    local u=planet_pixels[i]+offset i+=1
+    local u=planet_pixels[i] i+=1
     local v=planet_pixels[i] i+=1
-    local clr=get_pixel(flr(u),v)
+    u=flr(u+offset)%128
+    local clr=get_pixel(u,v)
     pset(x,yy,clr)
    end
   end
