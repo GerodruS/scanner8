@@ -409,7 +409,7 @@ function init_planet_surface()
   end,
   get_pixel=function(x,y)
    local c=peek(0x2000+(x+y*128)*0.5)
-   if (x%2==0) c=shr(c,4)
+   if (x%2~=0) c=shr(c,4)
    c=band(c,15)
    return c
   end,
