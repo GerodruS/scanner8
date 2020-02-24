@@ -16,11 +16,19 @@ end
 function _update60()
  local d={0,0}
  local move=false
- if (btn(⬆️)) d[2]-=1 move=true
- if (btn(⬇️)) d[2]+=1 move=true
- if (btn(⬅️)) d[1]-=1 move=true
- if (btn(➡️)) d[1]+=1 move=true
- 
+
+ if btn(⬆️) then
+  d[2]-=1 move=true
+ elseif btn(⬇️) then
+  d[2]+=1 move=true
+ end
+
+ if btn(⬅️) then
+  d[1]-=1 move=true
+ elseif btn(➡️) then
+  d[1]+=1 move=true
+ end
+
  if move then
   vnorm(d)
   vscale(d,0.1)
