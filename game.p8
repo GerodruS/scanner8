@@ -134,7 +134,7 @@ function generate_sources()
  local function get_closest_source(p)
   local best_d=(planet_radius*2)^2
   local best_i=nil
-  for i=1,count(sources) do
+  for i=1,#sources do
    local d=vdist2(p,sources[i])
    if (d<best_d) best_d=d best_i=i
   end
@@ -163,7 +163,7 @@ function generate_sources()
  
  local function get_resources(p)
   local r={0,0,0,0}
-  for i=1,count(sources) do
+  for i=1,#sources do
    local t=get_resource(p,sources[i])
    if t then
     r[t.stype]+=t.amount
@@ -183,13 +183,13 @@ function generate_sources()
  
  local function collect_resources(p)
   local r={0,0,0,0}
-  for i=1,count(sources) do
+  for i=1,#sources do
    local t=collect_resource(p,sources[i])
    if t then
     r[t.stype]+=t.amount
    end
   end
-  for i=count(sources),1,-1 do
+  for i=#sources,1,-1 do
    local elem=sources[i]
    if (elem.amount<=0) del(sources,elem)
   end
@@ -201,7 +201,7 @@ function generate_sources()
   collect=collect_resources,
   draw=function(position)
    local best_i=get_closest_source(position)
-   for i=1,count(sources) do
+   for i=1,#sources do
     local c=best_i[1]==i and 9 or 3
     pset(sources[i][1],sources[i][2],c)
    end
@@ -214,7 +214,7 @@ function generate_sources()
    print(resources[3])
    print(resources[4])
    
-   for i=1,count(sources) do
+   for i=1,#sources do
     print(sources[i].radius)
    end
   end,
@@ -277,7 +277,7 @@ function generate_planet_view(center,radius)
   local offset=time()*1
   
   local i=1
-  local n=count(planet_pixels)
+  local n=#planet_pixels
   while i<n do
    local x=planet_pixels[i] i+=1
    local y=planet_pixels[i] i+=1
@@ -312,7 +312,7 @@ function init_signal()
  local function draw_signal(signal,pos,clr)
   color(clr)
   local p=vcpy(pos)
-  for i=1,count(signal) do
+  for i=1,#signal do
    local x=pos[1]+(i-1)*4
    local y=pos[2]-signal[i]
    line(p[1],p[2],x,y)
@@ -327,8 +327,8 @@ function init_signal()
   local resource_len=len/4
   local noise=4
   local signal=signals[1]
-  local signals_count=count(signals)
-  local n=count(signal)
+  local signals_count=#signals
+  local n=#signal
   local next_signal_delay=0.3
   local signal_y_offset=4
  
@@ -371,11 +371,11 @@ function init_signal()
    draw_signal(signals[i],pos,2)
    
    if i==signals_count-1 then
-    for x=pos[1],pos[1]+(count(signals[i])-1)*4,4 do
+    for x=pos[1],pos[1]+(#signals[i]-1)*4,4 do
      line(x,4,x,50,0)
     end
    elseif i==signals_count-3 then
-    for x=pos[1]+2,pos[1]+(count(signals[i])-1)*4,4 do
+    for x=pos[1]+2,pos[1]+(#signals[i]-1)*4,4 do
      line(x,4,x,50,0)
     end
    end
