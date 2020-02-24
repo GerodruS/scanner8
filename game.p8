@@ -399,19 +399,30 @@ end
 function init_planet_surface()
  cls()
 
- for y=0,64 do
-  for x=0,127 do
+ local position={0,32}
+ local size={128,64}
+
+ for y=0,size[2]-1 do
+  for x=0,size[1]-1 do
    local c=(flr(x/4)+flr(y/4))%2==0 and 6 or 14
    pset(x,y,c)
   end
  end
  memcpy(0x1000,0x6000,1024*4)
 
+ local function draw_target(x,y)
+  rectfill(x-2,y-2,x+2,y+2,8)
+ end
+
  return {
+  pos=position,
+  size=size,
   draw=function(p)
    cls()
    memcpy(0x6000+1024*2,0x1000,1024*4)
-   rectfill(p[1]-2,p[2]-2,p[1]+2,p[2]+2,8)
+   draw_target(p[1]-size[1],p[2])
+   draw_target(p[1],p[2])
+   draw_target(p[1]+size[1],p[2])
    memcpy(0x2000,0x6000+1024*2,1024*4)
    cls()
   end,
