@@ -59,7 +59,7 @@ function _draw()
 
 -- cls()
 
- surface.draw(sp)
+ surface.draw(sp,planet_offset)
 -- if (true) return
  planet.draw(planet_offset,surface.get_pixel)
 -- if (true) color(11) print(stat(0)..' '..stat(1)) return
@@ -415,12 +415,17 @@ function init_planet_surface()
  return {
   pos=position,
   size=size,
-  draw=function(p)
+  draw=function(p,offset)
    cls()
-   memcpy(0x6000+1024*2,0x1000,1024*4)
-   draw_target(p[1]-size[1],p[2])
-   draw_target(p[1],p[2])
-   draw_target(p[1]+size[1],p[2])
+   offset=offset%128
+   if offset<64 then
+    sspr(offset,64,64,64,0,32)
+   else
+    sspr(offset,64,128-offset,64,0,         32)
+    sspr(0,     64,offset-64,    64,128-offset,32)
+   end
+   draw_target(p[1]-offset,p[2])
+   draw_target(p[1]-offset+128,p[2])
    memcpy(0x2000,0x6000+1024*2,1024*4)
    cls()
   end,
