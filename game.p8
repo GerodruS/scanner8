@@ -239,6 +239,10 @@ function generate_planet_view(center,radius)
   return r-2*negate*r
  end
 
+ local function get_addr(x,y,base)
+  return flr(base+(x+y*128)*0.5)
+ end
+
  local planet_pixels={}
  local left=center[1]-radius
  local right=center[1]+radius
@@ -251,12 +255,12 @@ function generate_planet_view(center,radius)
  right=flr(right)
  top=flr(top)
  bottom=flr(bottom)
- 
+
  for y=top,bottom do
   local p={}
   local x_min=right
   local x_max=left
-  
+
   for x=left,right do
    local px=2*(x-left)/diameter-1
    local py=2*(y-top)/diameter-1
@@ -266,18 +270,27 @@ function generate_planet_view(center,radius)
     py=asin(py)*2/3.141592653589
     local u=(px+1)*(height/2)
     local v=(py+1)*(height/2)
+    u=flr(u)
+    v=flr(v)
     add(p,{u,v})
     x_min=min(x,x_min)
     x_max=max(x,x_max)
    end
   end
-  
-  add(planet_pixels,y)
-  add(planet_pixels,x_min)
-  add(planet_pixels,x_max)
+
+  add(planet_pixels,get_addr(x_min,y,0x6000))
+  add(planet_pixels,get_addr(x_max,y,0x6000))
+  if x_min%2==1 then
+   add(planet_pixels,0)
+   add(planet_pixels,0)
+  end
   for j=1,count(p) do
    add(planet_pixels,p[j][1])
    add(planet_pixels,p[j][2])
+  end
+  if x_max%2==0 then
+   add(planet_pixels,0)
+   add(planet_pixels,0)
   end
  end
 
@@ -286,16 +299,17 @@ function generate_planet_view(center,radius)
   local i=1
   local n=#planet_pixels
   while i<n do
-   local y    =planet_pixels[i] i+=1
-   local x_min=planet_pixels[i] i+=1
-   local x_max=planet_pixels[i] i+=1
-   for x=x_min,x_max do
+   local a_min=planet_pixels[i] i+=1
+   local a_max=planet_pixels[i] i+=1
+   for a=a_min,a_max do
     local u=planet_pixels[i] i+=1
     local v=planet_pixels[i] i+=1
-    u=flr(u+offset)%128
-    v=flr(v)
-    local clr=get_pixel(u,v)
-    pset(x,y,clr)
+    local clr1=get_pixel(u,v)
+    local u=planet_pixels[i] i+=1
+    local v=planet_pixels[i] i+=1
+    local clr2=get_pixel(u,v)
+    local clr=bor(shl(clr2,4),clr1)
+    poke(a,clr)
    end
   end
  end
@@ -435,7 +449,7 @@ function init_planet_surface()
   get_pixel=function(x,y)
    local c=peek(0x2000+(x+y*128)*0.5)
    if (x%2~=0) c=shr(c,4)
-   c=band(c,15)
+   c=band(c,0xf)
    return c
   end,
  }
