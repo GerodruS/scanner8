@@ -435,11 +435,12 @@ function init_planet_surface()
   draw=function(p,offset)
    cls()
    offset=offset%128
+   local flroff=flr(offset)
    if offset<64 then
-    sspr(offset,64,64,64,0,32)
+    sspr(flroff,64,64,64,0,32)
    else
-    sspr(offset,64,128-offset,64,0,         32)
-    sspr(0,     64,offset-64,    64,128-offset,32)
+    sspr(flroff,64,128-flroff,64,0,         32)
+    sspr(0,     64,flroff-64,    64,128-flroff,32)
    end
    draw_target(p[1]-offset,p[2])
    draw_target(p[1]-offset+128,p[2])
