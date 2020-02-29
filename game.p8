@@ -247,10 +247,17 @@ function generate_planet_view(center,radius)
  local diameter=radius*2
  local height=64
 
- for x=left,right do
-  local y_min=bottom
+ left=flr(left)
+ right=flr(right)
+ top=flr(top)
+ bottom=flr(bottom)
+ 
+ for y=top,bottom do
   local p={}
-  for y=top,bottom do
+  local x_min=right
+  local x_max=left
+  
+  for x=left,right do
    local px=2*(x-left)/diameter-1
    local py=2*(y-top)/diameter-1
    local d2=px*px+py*py
@@ -259,40 +266,36 @@ function generate_planet_view(center,radius)
     py=asin(py)*2/3.141592653589
     local u=(px+1)*(height/2)
     local v=(py+1)*(height/2)
-    y_min=min(y,y_min)
     add(p,{u,v})
+    x_min=min(x,x_min)
+    x_max=max(x,x_max)
    end
   end
-  add(planet_pixels,x)
-  add(planet_pixels,y_min)
-  add(planet_pixels,count(p))
+  
+  add(planet_pixels,y)
+  add(planet_pixels,x_min)
+  add(planet_pixels,x_max)
   for j=1,count(p) do
    add(planet_pixels,p[j][1])
-   add(planet_pixels,flr(p[j][2]))
+   add(planet_pixels,p[j][2])
   end
  end
---
--- local function get_planet_pixel(x,y)
---  if (flr(x/7)+flr(y/7))%2==0 then
---   return 6
---  else
---   return 14
---  end
--- end
 
  local function draw_planet(offset,get_pixel)
+  offset=0
   local i=1
   local n=#planet_pixels
   while i<n do
-   local x=planet_pixels[i] i+=1
-   local y=planet_pixels[i] i+=1
-   local m=planet_pixels[i] i+=1
-   for yy=y,y+m-1 do
+   local y    =planet_pixels[i] i+=1
+   local x_min=planet_pixels[i] i+=1
+   local x_max=planet_pixels[i] i+=1
+   for x=x_min,x_max do
     local u=planet_pixels[i] i+=1
     local v=planet_pixels[i] i+=1
     u=flr(u+offset)%128
+    v=flr(v)
     local clr=get_pixel(u,v)
-    pset(x,yy,clr)
+    pset(x,y,clr)
    end
   end
  end
