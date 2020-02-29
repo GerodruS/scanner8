@@ -49,8 +49,8 @@ function _update60()
 
  local border=10
  local d=scanner_pos[1]-scanner_pos_offset[1]-planet_offset
- if (d<-border) planet_offset-=1
- if (border<d) planet_offset+=1
+ if (d<-border) planet_offset+=d+border
+ if (border<d) planet_offset+=d-border
 end
 
 function _draw()
@@ -59,7 +59,7 @@ function _draw()
 
 -- cls()
 
- surface.draw(sp,planet_offset)
+ surface.draw(scanner_pos,planet_offset)
 -- if (true) return
  planet.draw(planet_offset,surface.get_pixel)
 -- if (true) color(11) print(stat(0)..' '..stat(1)) return
