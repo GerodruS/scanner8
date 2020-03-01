@@ -309,13 +309,10 @@ function generate_planet_view(center,radius)
 
  local points=prep_planet()
  local function draw_planet(offset,get_pixel)
-  for y=top,bottom do
-   for x=left,right do
-    local uv=points[y] and points[y][x] or nil
-    if uv then
-     local c=get_pixel(uv[1],uv[2])
-     pset(x,y,c)
-    end
+  for y,pp in pairs(points) do
+   for x,uv in pairs(pp) do
+    local c=get_pixel(uv[1],uv[2])
+    pset(x,y,c)
    end
   end
  end
