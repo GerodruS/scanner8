@@ -231,6 +231,16 @@ end
 --planet view
 function generate_planet_view(center,radius)
 
+ local tilt=0.15
+ local pryy,pryz,przy,przz=
+  cos(tilt),sin(tilt),
+  -sin(tilt),cos(tilt)
+ local center_x,center_y=center[1],center[2]
+
+ function round(x)
+  return flr(x+0.5)
+ end
+
  local function asin(x)
   local negate=(x<0 and 1.0 or 0.0)
   x=abs(x)
@@ -243,7 +253,48 @@ function generate_planet_view(center,radius)
   return flr(base+(x+y*128)*0.5)
  end
 
- local planet_pixels={}
+ local function project(x,y,z)
+  local py,pz=
+   pryy*y+przy*z,
+   pryz*y+przz*z
+  return center_x+x,center_y+py,pz
+ end
+
+ local function prep_planet()
+  local points={}
+  local size=radius
+  -- texture coords
+  local tox,toy,tw,th=
+   64,0,128,64
+  local tcy=toy+th/2
+  for lat=-0.25,0.25,0.003 do
+   local scl=cos(lat)
+   local sscl=size*scl
+   for long=-0.5,0.5,0.003/scl do
+    -- 3d
+    local x,z,y=
+     sscl*cos(long),
+     sscl*sin(long),
+     size*sin(lat)
+    -- 2d
+    local fx,fy,fz=
+     project(x,y,z)
+    fx,fy=round(fx),round(fy)
+    -- texture
+    local tx,ty=
+     flr(tox+long*tw%tw),
+     flr(tcy-lat*2*th)
+    if 0<fz then
+     if not points[fy] then
+      points[fy]={}
+     end
+     points[fy][fx]={tx,ty}
+    end
+   end
+  end
+  return points
+ end
+
  local left=center[1]-radius
  local right=center[1]+radius
  local top=center[2]-radius
@@ -256,60 +307,15 @@ function generate_planet_view(center,radius)
  top=flr(top)
  bottom=flr(bottom)
 
- for y=top,bottom do
-  local p={}
-  local x_min=right
-  local x_max=left
-
-  for x=left,right do
-   local px=2*(x-left)/diameter-1
-   local py=2*(y-top)/diameter-1
-   local d2=px*px+py*py
-   if d2<=1 then
-    px=asin(px/sqrt(1-py*py))*2/3.141592653589
-    py=asin(py)*2/3.141592653589
-    local u=(px+1)*(height/2)
-    local v=(py+1)*(height/2)
-    u=flr(u)
-    v=flr(v)
-    add(p,{u,v})
-    x_min=min(x,x_min)
-    x_max=max(x,x_max)
-   end
-  end
-
-  add(planet_pixels,get_addr(x_min,y,0x6000))
-  add(planet_pixels,get_addr(x_max,y,0x6000))
-  if x_min%2==1 then
-   add(planet_pixels,0)
-   add(planet_pixels,0)
-  end
-  for j=1,count(p) do
-   add(planet_pixels,p[j][1])
-   add(planet_pixels,p[j][2])
-  end
-  if x_max%2==0 then
-   add(planet_pixels,0)
-   add(planet_pixels,0)
-  end
- end
-
+ local points=prep_planet()
  local function draw_planet(offset,get_pixel)
-  offset=0
-  local i=1
-  local n=#planet_pixels
-  while i<n do
-   local a_min=planet_pixels[i] i+=1
-   local a_max=planet_pixels[i] i+=1
-   for a=a_min,a_max do
-    local u=planet_pixels[i] i+=1
-    local v=planet_pixels[i] i+=1
-    local clr1=get_pixel(u,v)
-    local u=planet_pixels[i] i+=1
-    local v=planet_pixels[i] i+=1
-    local clr2=get_pixel(u,v)
-    local clr=bor(shl(clr2,4),clr1)
-    poke(a,clr)
+  for y=top,bottom do
+   for x=left,right do
+    local uv=points[y] and points[y][x] or nil
+    if uv then
+     local c=get_pixel(uv[1],uv[2])
+     pset(x,y,c)
+    end
    end
   end
  end
