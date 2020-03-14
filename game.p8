@@ -9,6 +9,7 @@ function _init()
  scanner_pos=vcpy(scanner_pos_offset)
  signal=init_signal()
  planet_offset=0
+ player_resources={2046,3127,4277,1216}
 
  planet=generate_planet_view(planet_center,planet_radius)
  surface=init_planet_surface()
@@ -44,7 +45,10 @@ function _update60()
  if btnp(❎) then
   local sp=vcpy(scanner_pos)
   vflr(sp)
-  sources.collect(sp)
+  local rs=sources.collect(sp)
+  for i=1,#player_resources do
+   player_resources[i]+=rs[i]*130
+  end
  end
 
  local border=16
@@ -77,6 +81,23 @@ function _draw()
  signal.draw(resources)
 
  color(11) print(stat(0)..' '..stat(1))
+
+ --ui
+-- if (true) return
+ color(7)
+ print('thunawanuro',65+8,27)
+ print('❎ launch probe',65,100)
+ print('⬅️  ➡️ scan',13,100)
+ print('⬆️\n⬇️',13+8,100-3)
+
+ --resouces
+ print('element 0\nindium\nplatinum\npalladium',65-4+3,70)
+ print(
+  flr(player_resources[1])..'\n'..
+  flr(player_resources[2])..'\n'..
+  flr(player_resources[3])..'\n'..
+  flr(player_resources[4]),
+  127-14-3,70)
 end
 -->8
 --math
@@ -372,7 +393,7 @@ function init_signal()
    signal[1]=0
    for i=2,n-1 do
     local ri=flr(i/(n/4))+1
-    local s=resources[ri]*5
+    local s=resources[ri]*2
     s+=noise/2-rnd(noise)
     signal[i]=s
    end
